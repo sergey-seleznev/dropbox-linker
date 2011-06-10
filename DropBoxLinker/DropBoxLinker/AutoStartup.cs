@@ -15,7 +15,7 @@ namespace DropBoxLinker
             get
             {
                 // open and check registry key
-                var key = Registry.CurrentUser.OpenSubKey(run_path);
+                var key = Registry.CurrentUser.OpenSubKey(run_path, true);
                 if (key == null) return false;
 
                 // get and check key value
@@ -34,13 +34,13 @@ namespace DropBoxLinker
                 if (value && !current_state)
                 {
                     // enable
-                    var key = Registry.CurrentUser.CreateSubKey(run_path);
+                    var key = Registry.CurrentUser.CreateSubKey(run_path, RegistryKeyPermissionCheck.ReadWriteSubTree);
                     key.SetValue(exe_name, exe_path);
                 }
                 else if (!value && current_state)
                 {
                     // disable
-                    var key = Registry.CurrentUser.CreateSubKey(run_path);
+                    var key = Registry.CurrentUser.CreateSubKey(run_path, RegistryKeyPermissionCheck.ReadWriteSubTree);
                     key.DeleteValue(exe_name);
                 }
             }
