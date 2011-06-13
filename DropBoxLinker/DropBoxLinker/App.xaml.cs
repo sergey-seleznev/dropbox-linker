@@ -43,7 +43,9 @@ namespace DropBoxLinker
             // check-up
             return
                 Directory.Exists(Settings.Default.SyncDirectory) &&
-                Settings.Default.UserID != 0;
+                Settings.Default.UserID != 0 &&
+                Settings.Default.PopupTimeout >= 1.0 &&
+                Settings.Default.PopupTimeout <= 5.0;
         }
 
         // tray
@@ -153,10 +155,11 @@ namespace DropBoxLinker
                     }
 
                     // are there any dropbox links?
-                    else if (text.Contains(Settings.Default.HttpPath))
+                    else if (text.Contains(Settings.Default.HttpPath) && !Settings.Default.CleanClipboard)
                     {
                         // append new-url to the end
                         Clipboard.SetText(text + "\r\n" + url);
+                        LaunchNotification(e.FullPath, NotifyType.Append);
                     }
 
                     // something special
@@ -164,16 +167,15 @@ namespace DropBoxLinker
                     {
                         // overwrite with url
                         Clipboard.SetText(url);
+                        LaunchNotification(e.FullPath, NotifyType.Set);
                     }
                 }
                 else
                 {
                     // overwrite with url
                     Clipboard.SetText(url);
+                    LaunchNotification(e.FullPath, NotifyType.Set);
                 }
-
-                // notify user
-                LaunchNotification(e.FullPath);
 
             }));
         }
@@ -202,17 +204,19 @@ namespace DropBoxLinker
                     }
 
                     // contains old-url?
-                    else if(text.Contains(old_url))
+                    else if (text.Contains(old_url))
                     {
                         // replace with new-url
                         Clipboard.SetText(text.Replace(old_url, new_url));
+                        LaunchNotification(e.FullPath, NotifyType.Update);
                     }
 
                     // are there any dropbox links?
-                    else if (text.Contains(Settings.Default.HttpPath))
+                    else if (text.Contains(Settings.Default.HttpPath) && !Settings.Default.CleanClipboard)
                     {
                         // append new-url to the end
                         Clipboard.SetText(text + "\r\n" + new_url);
+                        LaunchNotification(e.FullPath, NotifyType.Append);
                     }
 
                     // something special
@@ -220,16 +224,15 @@ namespace DropBoxLinker
                     {
                         // overwrite with new-url
                         Clipboard.SetText(new_url);
+                        LaunchNotification(e.FullPath, NotifyType.Set);
                     }
                 }
                 else
                 {
                     // overwrite with new-url
                     Clipboard.SetText(new_url);
+                    LaunchNotification(e.FullPath, NotifyType.Set);
                 }
-
-                // notify user
-                LaunchNotification(e.FullPath);
 
             }));
         }
@@ -255,14 +258,14 @@ namespace DropBoxLinker
                     Clipboard.SetText(text);
 
                     // notify user
-                    LaunchNotification(e.FullPath, false);
+                    LaunchNotification(e.FullPath, NotifyType.Remove);
                 }
             }));
         }
 
         // notifications
         private int notifications = 0;
-        private void LaunchNotification(string file, bool added = true)
+        private void LaunchNotification(string file, NotifyType type)
         {
             // notifications++
             Interlocked.Increment(ref notifications);
@@ -280,7 +283,7 @@ namespace DropBoxLinker
             var ext = info.Extension.ToLower();
 
             // launch
-            notify.Launch(notifications, name, ext, added);
+            notify.Launch(notifications, name, ext, type);
         }
 
     }

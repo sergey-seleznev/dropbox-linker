@@ -58,5 +58,29 @@ namespace DropBoxLinker.Properties {
                 this["SyncDirectory"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        public float PopupTimeout {
+            get {
+                return ((float)(this["PopupTimeout"]));
+            }
+            set {
+                this["PopupTimeout"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool CleanClipboard {
+            get {
+                return ((bool)(this["CleanClipboard"]));
+            }
+            set {
+                this["CleanClipboard"] = value;
+            }
+        }
     }
 }
