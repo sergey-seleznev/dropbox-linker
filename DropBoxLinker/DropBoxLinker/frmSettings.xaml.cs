@@ -15,8 +15,10 @@ namespace DropBoxLinker
         private class SettingsModel : INotifyPropertyChanged
         {
             private string _SyncDirectory;
-            private ulong _UserID;
-            private bool _AutoStartup;
+            private ulong  _UserID;
+            private bool   _AutoStartup;
+            private float  _PopupTimeout;
+            private bool   _CleanClipboard;
 
             public event PropertyChangedEventHandler PropertyChanged;
             private void NotifyPropertyChanged(String PropertyName)
@@ -28,23 +30,41 @@ namespace DropBoxLinker
             public string SyncDirectory
             {
                 get { return _SyncDirectory; }
-                set { _SyncDirectory = value;
+                set { if (_SyncDirectory == value) return;
+                    _SyncDirectory = value;
                     NotifyPropertyChanged("SyncDirectory"); }
             }
-            public ulong UserID
+            public ulong  UserID
             {
                 get { return _UserID; }
-                set { _UserID = value;
+                set { if (_UserID == value) return;
+                    _UserID = value;
                     NotifyPropertyChanged("UserID"); }
             }
-            public bool AutoStartup
+            public bool   AutoStartup
             {
                 get { return _AutoStartup; }
-                set { _AutoStartup = value;
+                set { if (_AutoStartup == value) return;
+                    _AutoStartup = value;
                     NotifyPropertyChanged("AutoStartup"); }
+            }
+            public float  PopupTimeout
+            {
+                get { return _PopupTimeout; }
+                set { if (_PopupTimeout == value) return;
+                    _PopupTimeout = value;
+                    NotifyPropertyChanged("PopupTimeout"); }
+            }
+            public bool   CleanClipboard
+            {
+                get { return _CleanClipboard; }
+                set { if (_CleanClipboard == value) return;
+                    _CleanClipboard = value;
+                    NotifyPropertyChanged("CleanClipboard"); }
             }
         }
         private SettingsModel settings;
+        private int notifications = 0;
 
         public frmSettings()
         {
@@ -57,6 +77,8 @@ namespace DropBoxLinker
             settings = new SettingsModel {
                 SyncDirectory = Settings.Default.SyncDirectory,
                 UserID = Settings.Default.UserID,
+                PopupTimeout = Settings.Default.PopupTimeout,
+                CleanClipboard = Settings.Default.CleanClipboard,
                 AutoStartup = AutoStartup.State };
             DataContext = settings;
         }
@@ -80,10 +102,12 @@ namespace DropBoxLinker
                 txtUserID.Focus(); txtUserID.SelectAll(); return; }
 
             // save
-            Settings.Default.SyncDirectory = txtSyncDirectory.Text;
-            Settings.Default.UserID = user_id;
-            Settings.Default.Save();
             AutoStartup.State = settings.AutoStartup;
+            Settings.Default.SyncDirectory = settings.SyncDirectory;
+            Settings.Default.UserID = user_id;
+            Settings.Default.PopupTimeout = settings.PopupTimeout;
+            Settings.Default.CleanClipboard = settings.CleanClipboard;
+            Settings.Default.Save();
 
             // restart watcher, if started
             if (app.watcher != null) {
@@ -145,12 +169,25 @@ namespace DropBoxLinker
             // launch
             Process.Start(path);
         }
+        private void OnPopupTimeoutChanged(object sender, MouseButtonEventArgs e)
+        {
+            // do not show until not loaded
+            if (DataContext == null) return;
+
+            // create notifier
+            var notify = new frmNotify();
+            notify.Closed += (o, a) =>
+                { notifications--; };
+
+            // launch in preview mode
+            notifications++;
+            notify.Launch(notifications, "", "", NotifyType.Preview, settings.PopupTimeout);
+        }
         private void OnToggleStartup(object sender, MouseButtonEventArgs e)
         {
             var s = (DataContext as SettingsModel);
             s.AutoStartup = !s.AutoStartup;
         }
-
 
     }
 

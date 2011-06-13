@@ -12,6 +12,10 @@ namespace DropBoxLinker
         }
 
         // links
+        private void OpenCodePlex(object sender, MouseButtonEventArgs e)
+        {
+            Process.Start(@"http://dropboxlinker.codeplex.com/");
+        }
         private void OpenAboutMe(object sender, MouseButtonEventArgs e)
         {
             Process.Start(@"http://about.me/sergey-seleznev");
@@ -36,6 +40,8 @@ namespace DropBoxLinker
         {
             Close();
         }
+
+        
 
     }
 }
