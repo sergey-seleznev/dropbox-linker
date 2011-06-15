@@ -68,7 +68,7 @@
                     Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" />
 
         <!-- public sync directory -->
-        <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3">
+        <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Name="panSyncDirectory">
             <TextBlock Text="public sync directory" Style="{StaticResource PropertyTitle}" />
             <TextBox Name="txtSyncDirectory" Text="{Binding SyncDirectory, UpdateSourceTrigger=PropertyChanged, FallbackValue='D:\\Data\\dropbox\\Public'}" Style="{StaticResource PropertyInput}" />
             <TextBlock Text="choose directory" Style="{StaticResource PropertyChangeLink}" MouseDown="OnSelectSyncDirectory" />
