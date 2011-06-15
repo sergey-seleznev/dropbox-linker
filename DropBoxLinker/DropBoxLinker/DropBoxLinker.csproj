@@ -42,6 +42,13 @@
   <PropertyGroup>
     <ApplicationIcon>graphics\icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
@@ -62,6 +69,9 @@
     <Compile Include="frmAbout.xaml.cs">
       <DependentUpon>frmAbout.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Settings.cs" />
+    <Compile Include="Tray.cs" />
+    <Compile Include="Watching.cs" />
     <Compile Include="WindowBehavior.cs" />
     <Page Include="frmAbout.xaml">
       <SubType>Designer</SubType>

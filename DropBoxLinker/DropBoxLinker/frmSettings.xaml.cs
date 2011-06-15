@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
-using System.ComponentModel;
 using DropBoxLinker.Properties;
 using WinForms = System.Windows.Forms;
 
@@ -11,67 +10,19 @@ namespace DropBoxLinker
 {
     public partial class frmSettings : Window
     {
-        private App app;
-        private class SettingsModel : INotifyPropertyChanged
-        {
-            private string _SyncDirectory;
-            private ulong  _UserID;
-            private bool   _AutoStartup;
-            private float  _PopupTimeout;
-            private bool   _CleanClipboard;
-
-            public event PropertyChangedEventHandler PropertyChanged;
-            private void NotifyPropertyChanged(String PropertyName)
-            {
-                if (PropertyChanged != null)
-                    PropertyChanged(this, new PropertyChangedEventArgs(PropertyName));
-            }
-
-            public string SyncDirectory
-            {
-                get { return _SyncDirectory; }
-                set { if (_SyncDirectory == value) return;
-                    _SyncDirectory = value;
-                    NotifyPropertyChanged("SyncDirectory"); }
-            }
-            public ulong  UserID
-            {
-                get { return _UserID; }
-                set { if (_UserID == value) return;
-                    _UserID = value;
-                    NotifyPropertyChanged("UserID"); }
-            }
-            public bool   AutoStartup
-            {
-                get { return _AutoStartup; }
-                set { if (_AutoStartup == value) return;
-                    _AutoStartup = value;
-                    NotifyPropertyChanged("AutoStartup"); }
-            }
-            public float  PopupTimeout
-            {
-                get { return _PopupTimeout; }
-                set { if (_PopupTimeout == value) return;
-                    _PopupTimeout = value;
-                    NotifyPropertyChanged("PopupTimeout"); }
-            }
-            public bool   CleanClipboard
-            {
-                get { return _CleanClipboard; }
-                set { if (_CleanClipboard == value) return;
-                    _CleanClipboard = value;
-                    NotifyPropertyChanged("CleanClipboard"); }
-            }
-        }
-        private SettingsModel settings;
-        private int notifications = 0;
-
         public frmSettings()
         {
             InitializeComponent();
 
-            // get application instance
-            app = Application.Current as App;
+            // if sync path unset/not-exists, try to get it from db
+            if (String.IsNullOrEmpty(Settings.Default.SyncDirectory) ||
+               !Directory.Exists(Settings.Default.SyncDirectory))
+                Settings.Default.SyncDirectory = App.GetDropboxPublicPath();
+
+            // if sync path is still unknown, display input
+            panSyncDirectory.Visibility =
+                Settings.Default.SyncDirectory == null ?
+                    Visibility.Visible : Visibility.Collapsed;
 
             // load & show settings
             settings = new SettingsModel {
@@ -82,13 +33,16 @@ namespace DropBoxLinker
                 AutoStartup = AutoStartup.State };
             DataContext = settings;
         }
+        private SettingsModel settings;
 
+        // general handlers
         private void OnApply(object sender, RoutedEventArgs e)
         {
             var h = this.ActualHeight;
 
             // check sync folder
             if (!Directory.Exists(settings.SyncDirectory)) {
+                panSyncDirectory.Visibility = Visibility.Visible;
                 MessageBox.Show("Selected sync directory not exists!", "Error",
                 MessageBoxButton.OK, MessageBoxImage.Error);
                 txtSyncDirectory.Focus(); txtSyncDirectory.SelectAll(); return;
@@ -110,9 +64,9 @@ namespace DropBoxLinker
             Settings.Default.Save();
 
             // restart watcher, if started
-            if (app.watcher != null) {
-                app.StopWatcher();
-                app.LaunchWatcher(); }
+            if (App.watcher != null) {
+                App.StopWatcher();
+                App.LaunchWatcher(); }
 
             // info
             MessageBox.Show("User settings successfully saved", "Done",
@@ -127,6 +81,7 @@ namespace DropBoxLinker
             Close();
         }
 
+        // internal handlers
         private void OnSelectSyncDirectory(object sender, MouseButtonEventArgs e)
         {
             // create dialog
@@ -171,24 +126,13 @@ namespace DropBoxLinker
         }
         private void OnPopupTimeoutChanged(object sender, MouseButtonEventArgs e)
         {
-            // do not show until not loaded
-            if (DataContext == null) return;
-
-            // create notifier
-            var notify = new frmNotify();
-            notify.Closed += (o, a) =>
-                { notifications--; };
-
-            // launch in preview mode
-            notifications++;
-            notify.Launch(notifications, "", "", NotifyType.Preview, settings.PopupTimeout);
+            frmNotify.Preview(settings.PopupTimeout);
         }
         private void OnToggleStartup(object sender, MouseButtonEventArgs e)
         {
             var s = (DataContext as SettingsModel);
             s.AutoStartup = !s.AutoStartup;
         }
-
+ 
     }
-
 }
