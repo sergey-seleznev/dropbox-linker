@@ -170,7 +170,7 @@ namespace DropBoxLinker
         }
 
         // get valid URL for file
-        private static string GetPublicURL(string path)
+        public static string GetPublicURL(string path)
         {
             // convert to relative
             path = path.Replace(Settings.Default.SyncDirectory, "");
@@ -182,28 +182,8 @@ namespace DropBoxLinker
             return String.Format(@"{0}/{1}/{2}",
                 Settings.Default.HttpPath,
                 Settings.Default.UserID,
-                EncodePath(path));
+                Uri.EscapeUriString(path));
         }
-        private static string EncodePath(string path)
-        {
-            // get unique chars that require encoding
-            var CharsToEncode = path
-                .Distinct().Where(c =>
-                    !Char.IsLetterOrDigit(c) && c != '%' &&
-                    !ValidSpecialChars.Contains(c))
-                .ToList();
-
-            // first, encode '%' chars
-            path = path.Replace("%", "%25");
-
-            // then encode other invalid chars
-            foreach (var c in CharsToEncode)
-                path = path.Replace(new string(c, 1),
-                        string.Format("%{0:X2}", (int)c));
-
-            return path;
-        }
-        private static string ValidSpecialChars = @".-_/";
 
     }
 }

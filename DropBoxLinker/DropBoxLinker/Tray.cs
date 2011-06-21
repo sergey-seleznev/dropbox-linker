@@ -20,7 +20,9 @@ namespace DropBoxLinker
 
             // create menu items
             var menu = new WinForms.MenuItem[] {
-                new WinForms.MenuItem("Open Public", OnTrayOpenFolder) { DefaultItem = true },
+                new WinForms.MenuItem("Get links...", OnTrayGetLinks) { DefaultItem = true },
+                new WinForms.MenuItem("Open Public", OnTrayOpenFolder),
+                new WinForms.MenuItem("-"),
                 new WinForms.MenuItem("Settings", OnTraySettings),
                 new WinForms.MenuItem("About", OnTrayAbout),
                 new WinForms.MenuItem("-"),
@@ -32,7 +34,7 @@ namespace DropBoxLinker
                 Icon = new Icon(resource.Stream),
                 ContextMenu = new WinForms.ContextMenu(menu),
                 Visible = true };
-            tray.DoubleClick += OnTrayOpenFolder;
+            tray.DoubleClick += OnTrayGetLinks;
         }
         public static void DestroyTrayIcon()
         {
@@ -45,6 +47,10 @@ namespace DropBoxLinker
         }
 
         // menu item click handlers
+        private static void OnTrayGetLinks(object sender, EventArgs e)
+        {
+            new frmGetLinks().ShowDialog();
+        }
         private static void OnTrayOpenFolder(object sender, EventArgs e)
         {
             Process.Start(Settings.Default.SyncDirectory);

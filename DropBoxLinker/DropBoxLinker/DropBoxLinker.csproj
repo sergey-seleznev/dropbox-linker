@@ -69,6 +69,9 @@
     <Compile Include="frmAbout.xaml.cs">
       <DependentUpon>frmAbout.xaml</DependentUpon>
     </Compile>
+    <Compile Include="frmGetLinks.xaml.cs">
+      <DependentUpon>frmGetLinks.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="Tray.cs" />
     <Compile Include="Watching.cs" />
@@ -89,6 +92,10 @@
       <DependentUpon>frmNotify.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="frmGetLinks.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="frmSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
