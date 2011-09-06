@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.Deployment.Application;
+using System.Diagnostics;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 
@@ -9,6 +11,18 @@ namespace DropBoxLinker
         public frmAbout()
         {
             InitializeComponent();
+
+            // get ClickOnce or Assembly version
+            var version = (ApplicationDeployment.IsNetworkDeployed) ?
+                ApplicationDeployment.CurrentDeployment.CurrentVersion :
+                Assembly.GetExecutingAssembly().GetName().Version;
+
+            // include build, if not '0'
+            var format = (version.Build == 0) ? "{0}.{1}" : "{0}.{1}.{2}";
+
+            // apply label
+            txtVersion.Text = string.Format(format,
+                version.Major, version.Minor, version.Build);
         }
 
         // links
@@ -40,7 +54,6 @@ namespace DropBoxLinker
         {
             Close();
         }
-
         
 
     }

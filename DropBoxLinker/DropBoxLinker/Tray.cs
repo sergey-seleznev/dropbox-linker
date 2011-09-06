@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows;
 using DropBoxLinker.Properties;
 using WinForms = System.Windows.Forms;
+using System.Drawing.Imaging;
 
 namespace DropBoxLinker
 {
@@ -22,6 +23,7 @@ namespace DropBoxLinker
             var menu = new WinForms.MenuItem[] {
                 new WinForms.MenuItem("Get links...", OnTrayGetLinks) { DefaultItem = true },
                 new WinForms.MenuItem("Open Public", OnTrayOpenFolder),
+                new WinForms.MenuItem("Capture screenshot", OnTrayCaptureScreenshot),
                 new WinForms.MenuItem("-"),
                 new WinForms.MenuItem("Settings", OnTraySettings),
                 new WinForms.MenuItem("About", OnTrayAbout),
@@ -55,6 +57,36 @@ namespace DropBoxLinker
         {
             Process.Start(Settings.Default.SyncDirectory);
         }
+        private static void OnTrayCaptureScreenshot(object sender, EventArgs e)
+        {
+            System.Threading.Thread.Sleep(300);
+
+            //var name = String.Format("Screenshot-{0:dd.MM.yyyy}-{0:HH-mm-ss}")
+
+            //var name = DateTime.Now.ToString("Screen")
+
+            var w = WinForms.Screen.GetBounds(new System.Drawing.Point(0, 0)).Width;
+            int h = WinForms.Screen.GetBounds(new System.Drawing.Point(0, 0)).Height;
+
+            var bmp = new Bitmap(w, h);
+            var gfx = Graphics.FromImage(bmp as Image);
+
+            gfx.CopyFromScreen(0, 0, 0, 0, new System.Drawing.Size(w, h));
+
+            bmp.Save(@"D:\screen_" + DateTime.Now.Ticks.ToString() + ".png", ImageFormat.Png);
+
+            //tray.ContextMenu.Collapse += OnTrayMenuCollapsed;
+
+            
+        }
+        private static void OnTrayMenuCollapsed(object sender, EventArgs e)
+        {
+            tray.ContextMenu.Collapse -= OnTrayMenuCollapsed;
+
+            
+            //new frmGetLinks().ShowDialog();
+        }
+
         private static void OnTraySettings(object sender, EventArgs e)
         {
             new frmSettings().ShowDialog();

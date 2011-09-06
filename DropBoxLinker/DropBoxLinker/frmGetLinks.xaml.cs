@@ -13,7 +13,7 @@ namespace DropBoxLinker
 {
 	public partial class frmGetLinks : Window
 	{
-        public frmGetLinks()
+		public frmGetLinks()
 		{
 			InitializeComponent();
 
@@ -23,11 +23,11 @@ namespace DropBoxLinker
 			Filter.DoWork += FilterStart;
 			Filter.RunWorkerCompleted += FilterComplete;
 
-            // load and sort contents
-            SyncRoot = new SyncFolder(Settings.Default.SyncDirectory);
-            SortingChanged(null, null);
+			// load and sort contents
+			SyncRoot = new SyncFolder(Settings.Default.SyncDirectory);
+			SortingChanged(null, null);
 
-            // set contexts
+			// set contexts
 			treeBrowser.DataContext = SyncRoot;
 			grdSelectionInfo.DataContext = SyncRoot;
 
@@ -39,7 +39,7 @@ namespace DropBoxLinker
 			FilterChange(null, null);
 		}
 
-        // data
+		// data
 		public static SyncFolder SyncRoot;
 
 		// filtering
@@ -87,7 +87,7 @@ namespace DropBoxLinker
 				Filter.RunWorkerAsync(value);
 		}
 
-        // sorting
+		// sorting
 		private void SortingChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (lstSortKind == null || lstSortOrder == null || SyncRoot == null) return;
@@ -95,40 +95,40 @@ namespace DropBoxLinker
 			var kind = (lstSortKind.SelectedItem as ComboBoxItem).Content as String;
 			var order = (lstSortOrder.SelectedItem as ComboBoxItem).Content as String;
 
-            Func<SyncFile, dynamic> sort_key;
-            switch (kind) {
-                case "date": sort_key = sf => sf.Date; break;
-                case "name": sort_key = sf => sf.Name; break;
-                case "type": sort_key = sf => sf.Ext;  break;
-                case "size": sort_key = sf => sf.Size; break;
-                default: sort_key = null; break; }
+			Func<SyncFile, dynamic> sort_key;
+			switch (kind) {
+				case "date": sort_key = sf => sf.Date; break;
+				case "name": sort_key = sf => sf.Name; break;
+				case "type": sort_key = sf => sf.Ext;  break;
+				case "size": sort_key = sf => sf.Size; break;
+				default: sort_key = null; break; }
 
-            SyncRoot.Sort(sort_key, order == "ascending");
-        }
+			SyncRoot.Sort(sort_key, order == "ascending");
+		}
 
 		// context menu
 		private void BrowserRefreshList(object sender, RoutedEventArgs e)
 		{
-            // save currently selected filter
-            var value = sldDateRange.Value;
+			// save currently selected filter
+			var value = sldDateRange.Value;
 
-            // reload and sort contents
-            SyncRoot = new SyncFolder(Settings.Default.SyncDirectory);
-            SortingChanged(null, null);
+			// reload and sort contents
+			SyncRoot = new SyncFolder(Settings.Default.SyncDirectory);
+			SortingChanged(null, null);
 
-            // reset contexts
+			// reset contexts
 			treeBrowser.DataContext = SyncRoot;
 			grdSelectionInfo.DataContext = SyncRoot;
 
-            // total file count
-            sldDateRange.Maximum = SyncRoot.Dates.Count - 1;
+			// total file count
+			sldDateRange.Maximum = SyncRoot.Dates.Count - 1;
 
-            // try to reload previous value
-            sldDateRange.Value = (sldDateRange.Maximum > value) ? value : 0;
+			// try to reload previous value
+			sldDateRange.Value = (sldDateRange.Maximum > value) ? value : 0;
 
-            // force refiltering
-            LastFilteredValue = -1;
-            FilterChange(null, null);
+			// force refiltering
+			LastFilteredValue = -1;
+			FilterChange(null, null);
 		}
 		private void BrowserSelectAll(object sender, RoutedEventArgs e)
 		{
@@ -158,78 +158,78 @@ namespace DropBoxLinker
 			}
 		}
 
-        // commands
-        private void GetLinks(object sender, RoutedEventArgs e)
-        {
-            // retrieve selected files
-            var selected_files = SyncRoot.SelectedFiles;
-            if (selected_files.Count == 0) {
-                MessageBox.Show("Nothing selected!", "Error", MessageBoxButton.OK,
-                MessageBoxImage.Information); return; }
+		// commands
+		private void GetLinks(object sender, RoutedEventArgs e)
+		{
+			// retrieve selected files
+			var selected_files = SyncRoot.SelectedFiles;
+			if (selected_files.Count == 0) {
+				MessageBox.Show("Nothing selected!", "Error", MessageBoxButton.OK,
+				MessageBoxImage.Information); return; }
 
-            Hide();
+			Hide();
 
-            // create URL list
-            var links = "";
-            for (var i = 0; i < selected_files.Count - 1; i++)
-                links += App.GetPublicURL(selected_files[i]) + "\r\n";
-            links += App.GetPublicURL(selected_files.Last());
+			// create URL list
+			var links = "";
+			for (var i = 0; i < selected_files.Count - 1; i++)
+				links += App.GetPublicURL(selected_files[i]) + "\r\n";
+			links += App.GetPublicURL(selected_files.Last());
 
-            // update clipboard
-            if (Clipboard.ContainsText())
-            {
-                // get existing text
-                var text = Clipboard.GetText();
+			// update clipboard
+			if (Clipboard.ContainsText())
+			{
+				// get existing text
+				var text = Clipboard.GetText();
 
-                // are there any dropbox links?
-                if (text.Contains(Settings.Default.HttpPath) && !Settings.Default.CleanClipboard)
-                {
-                    // append links to the end
-                    Clipboard.SetText(text + "\r\n" + links);
+				// are there any dropbox links?
+				if (text.Contains(Settings.Default.HttpPath) && !Settings.Default.CleanClipboard)
+				{
+					// append links to the end
+					Clipboard.SetText(text + "\r\n" + links);
 
-                    // notify
-                    foreach (var f in selected_files)
-                        frmNotify.Launch(f, NotifyType.Append);
-                }
-                else
-                {
-                    // overwrite with links
-                    Clipboard.SetText(links);
+					// notify
+					foreach (var f in selected_files)
+						frmNotify.Launch(f, NotifyType.Append);
+				}
+				else
+				{
+					// overwrite with links
+					Clipboard.SetText(links);
 
-                    // notify
-                    frmNotify.Launch(selected_files.First(), NotifyType.Set);
-                    for (var f = 1; f < selected_files.Count; f++)
-                        frmNotify.Launch(selected_files[f], NotifyType.Append);
-                }
-            }
-            
-            // something special
-            else
-            {
-                // overwrite with links
-                Clipboard.SetText(links);
+					// notify
+					frmNotify.Launch(selected_files.First(), NotifyType.Set);
+					for (var f = 1; f < selected_files.Count; f++)
+						frmNotify.Launch(selected_files[f], NotifyType.Append);
+				}
+			}
+			
+			// something special
+			else
+			{
+				// overwrite with links
+				Clipboard.SetText(links);
 
-                // notify
-                frmNotify.Launch(selected_files.First(), NotifyType.Set);
-                for (var f = 1; f < selected_files.Count; f++)
-                    frmNotify.Launch(selected_files[f], NotifyType.Append);
-            }
+				// notify
+				frmNotify.Launch(selected_files.First(), NotifyType.Set);
+				for (var f = 1; f < selected_files.Count; f++)
+					frmNotify.Launch(selected_files[f], NotifyType.Append);
+			}
 
-            Close();
-        }
-        private void Cancel(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
+			Close();
+		}
+		private void Cancel(object sender, RoutedEventArgs e)
+		{
+			Close();
+		}
 
 	}
 
-    // classes
+	// classes
 	public abstract class SyncItem : INotifyPropertyChanged
 	{
 		// common properties
 		public SyncFolder Parent { get; protected set; }
-        public string Name { get; protected set; }
+		public string Name { get; protected set; }
 
 		// other abstract properties
 		public abstract bool IsVisible { get; set; }
@@ -249,12 +249,12 @@ namespace DropBoxLinker
 	public class SyncFolder : SyncItem
 	{
 		// sorting
-        private static Boolean _SortAscending = false;
-        private static Func<SyncFile, dynamic> _SortKind = si => si.Date;
+		private static Boolean _SortAscending = false;
+		private static Func<SyncFile, dynamic> _SortKind = si => si.Date;
 		public void Sort(Func<SyncFile, dynamic> kind, Boolean ascending)
 		{
-            _SortKind = kind;
-            _SortAscending = ascending;
+			_SortKind = kind;
+			_SortAscending = ascending;
 			//_Sort = value;
 			SortFolder();
 			NotifyPropertyChanged("VisibleChildren");
@@ -262,19 +262,19 @@ namespace DropBoxLinker
 		}
 		private void SortFolder()
 		{
-            // get and sort folders
-            //var folders = Children.Where(c => c is SyncFolder)
-            //    .Select(si => si as SyncFolder)
-            //    .OrderBy(si => si.Name);
+			// get and sort folders
+			//var folders = Children.Where(c => c is SyncFolder)
+			//    .Select(si => si as SyncFolder)
+			//    .OrderBy(si => si.Name);
 
-            var child = _Children.OrderByDescending(si => si is SyncFolder);
+			var child = _Children.OrderByDescending(si => si is SyncFolder);
 
-            child = (_SortAscending) ?
-                child.ThenBy(si => (si is SyncFile) ? _SortKind(si as SyncFile) : (si as SyncFolder).Name) :
-                child.ThenByDescending(si => (si is SyncFile) ? _SortKind(si as SyncFile) : null)
-                     .ThenBy(si => (si is SyncFolder) ? (si as SyncFolder).Name : null);
+			child = (_SortAscending) ?
+				child.ThenBy(si => (si is SyncFile) ? _SortKind(si as SyncFile) : (si as SyncFolder).Name) :
+				child.ThenByDescending(si => (si is SyncFile) ? _SortKind(si as SyncFile) : null)
+					 .ThenBy(si => (si is SyncFolder) ? (si as SyncFolder).Name : null);
 
-            _Children = child.ToList();
+			_Children = child.ToList();
 
 			// get and sort files
 			//var files = _Sort(Children.Where(c => c is SyncFile).Select(si => si as SyncFile));
@@ -287,10 +287,10 @@ namespace DropBoxLinker
 			//_Children = child;
 
 
-            // sync subfolders
-            foreach (var si in _Children)
-                if (si is SyncFolder)
-                    (si as SyncFolder).SortFolder();
+			// sync subfolders
+			foreach (var si in _Children)
+				if (si is SyncFolder)
+					(si as SyncFolder).SortFolder();
 		}
 
 		// children
@@ -303,7 +303,7 @@ namespace DropBoxLinker
 		{
 			get { return Children.Where(c => c.IsVisible == true).ToList(); }
 		}
-        
+		
 		// visibility
 		public override bool IsVisible
 		{
@@ -368,23 +368,23 @@ namespace DropBoxLinker
 			}
 		}
 
-        // selected paths list
-        public List<String> SelectedFiles
-        {
-            get
-            {
-                var selected_files = VisibleChildren
-                    .Where(si => (si is SyncFile) && si.IsSelected == true)
-                    .Select(si => (si as SyncFile).Path).ToList();
+		// selected paths list
+		public List<String> SelectedFiles
+		{
+			get
+			{
+				var selected_files = VisibleChildren
+					.Where(si => (si is SyncFile) && si.IsSelected == true)
+					.Select(si => (si as SyncFile).Path).ToList();
 
-                var selected_folders = VisibleChildren.Where(si => si is SyncFolder &&
-                    si.IsSelected != false).Select(si => si as SyncFolder).ToList();
-                foreach (var f in selected_folders)
-                    selected_files.AddRange(f.SelectedFiles);
+				var selected_folders = VisibleChildren.Where(si => si is SyncFolder &&
+					si.IsSelected != false).Select(si => si as SyncFolder).ToList();
+				foreach (var f in selected_folders)
+					selected_files.AddRange(f.SelectedFiles);
 
-                return selected_files;
-            }
-        }
+				return selected_files;
+			}
+		}
 
 		// selection
 		public override bool? IsSelected
@@ -394,13 +394,13 @@ namespace DropBoxLinker
 				// count selected and non-selected content
 				var selected_count = Children.Count(c => c.IsVisible && c.IsSelected == true);
 				var unselected_count = Children.Count(c => c.IsVisible && c.IsSelected == false);
-                var undefined_count = Children.Count(c => c.IsVisible && c.IsSelected == null);
+				var undefined_count = Children.Count(c => c.IsVisible && c.IsSelected == null);
 
 				// switch cases
-                if (selected_count > 0 && unselected_count > 0) return null; // some selected, some not
-                else if (selected_count > 0 && unselected_count == 0) return true; // everything selected
-                else if (undefined_count > 0) return null;
-                else return false; // nothing selected
+				if (selected_count > 0 && unselected_count > 0) return null; // some selected, some not
+				else if (selected_count > 0 && unselected_count == 0) return true; // everything selected
+				else if (undefined_count > 0) return null;
+				else return false; // nothing selected
 			}
 			set
 			{
@@ -505,7 +505,7 @@ namespace DropBoxLinker
 
 			// append files
 			var files = info.GetFiles()
-                .Select(fi => new SyncFile(fi, this));
+				.Select(fi => new SyncFile(fi, this));
 			_Children.AddRange(files);
 		}
 		public SyncFolder(String path) :
@@ -514,7 +514,7 @@ namespace DropBoxLinker
 	}
 	public class SyncFile : SyncItem
 	{
-        public string Path { get; private set; }
+		public string Path { get; private set; }
 
 		// selection
 		private bool? _IsSelected;
@@ -579,7 +579,7 @@ namespace DropBoxLinker
 		public SyncFile(FileInfo info, SyncFolder parent)
 		{
 			Parent = parent;
-            Path = info.FullName;
+			Path = info.FullName;
 			Name = info.Name.Replace(info.Extension, "");
 			Ext = info.Extension.ToLower();
 			_Date = info.LastWriteTime;
@@ -588,7 +588,7 @@ namespace DropBoxLinker
 		}
 	}
 
-    // value-converters
+	// value-converters
 	public class DateConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -615,7 +615,7 @@ namespace DropBoxLinker
 
 			if (frmGetLinks.SyncRoot == null) return null;
 
-            var date = frmGetLinks.SyncRoot.Dates[(int)(double)value];
+			var date = frmGetLinks.SyncRoot.Dates[(int)(double)value];
 
 			var c = new DateConverter().Convert(date, null, null, null);
 
@@ -645,23 +645,23 @@ namespace DropBoxLinker
 		}
 	}
 
-    // treeview template-selector
+	// treeview template-selector
 	public class SyncItemTemplateSelector : DataTemplateSelector
 	{
 		public override DataTemplate SelectTemplate(object item, DependencyObject container)
 		{
-            if (item is SyncFolder)
+			if (item is SyncFolder)
 
 				return (container as FrameworkElement)
-                    .FindResource("FolderTemplate") as DataTemplate;
+					.FindResource("FolderTemplate") as DataTemplate;
 
 			else if (item is SyncFile)
 
 				return (container as FrameworkElement)
-                    .FindResource("FileTemplate") as DataTemplate;
-            
-            else 
-                return null;
+					.FindResource("FileTemplate") as DataTemplate;
+			
+			else 
+				return null;
 		}
 	}
 
