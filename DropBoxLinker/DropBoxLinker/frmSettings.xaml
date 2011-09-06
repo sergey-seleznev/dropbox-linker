@@ -6,7 +6,7 @@
         SizeToContent="WidthAndHeight" ResizeMode="NoResize"
         UseLayoutRounding="True" RenderOptions.BitmapScalingMode="NearestNeighbor"
         local:WindowBehavior.HideCloseButton="True"
-        Icon="/DropBoxLinker;component/graphics/icon.ico">
+        Icon="/DropBoxLinker;component/DropBoxLinker.ico">
     
     <Window.Resources>
         
@@ -19,7 +19,7 @@
         <!-- input box -->
         <Style TargetType="FrameworkElement" x:Key="PropertyInput">
             <Setter Property="Margin" Value="10,0,0,0" />
-        </Style>    
+        </Style>
         
         <!-- change link-label -->
         <Style TargetType="TextBlock" x:Key="SmallGrayText">

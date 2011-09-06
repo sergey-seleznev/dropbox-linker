@@ -14,6 +14,8 @@ namespace DropBoxLinker
         // validate settings
         public static bool ValidateSettings()
         {
+
+
             // update
             Settings.Default.Reload();
 
@@ -75,14 +77,17 @@ namespace DropBoxLinker
     }
 
     // settings model
-    public class SettingsModel : INotifyPropertyChanged
+    public class SettingsModel : INotifyPropertyChanged, IDataErrorInfo
     {
         // private storage
         private string _SyncDirectory;
-        private ulong _UserID;
-        private bool _AutoStartup;
-        private float _PopupTimeout;
-        private bool _CleanClipboard;
+        private ulong  _UserID;
+        private bool   _AutoStartup;
+        private float  _PopupTimeout;
+        private bool   _CleanClipboard;
+        private string _SortingKind;
+        private string _SortingOrder;
+        private int    _FilterCount;
 
         // public properties
         public string SyncDirectory
@@ -95,7 +100,7 @@ namespace DropBoxLinker
                 NotifyPropertyChanged("SyncDirectory");
             }
         }
-        public ulong UserID
+        public ulong  UserID
         {
             get { return _UserID; }
             set
@@ -105,7 +110,7 @@ namespace DropBoxLinker
                 NotifyPropertyChanged("UserID");
             }
         }
-        public bool AutoStartup
+        public bool   AutoStartup
         {
             get { return _AutoStartup; }
             set
@@ -115,7 +120,7 @@ namespace DropBoxLinker
                 NotifyPropertyChanged("AutoStartup");
             }
         }
-        public float PopupTimeout
+        public float  PopupTimeout
         {
             get { return _PopupTimeout; }
             set
@@ -125,7 +130,7 @@ namespace DropBoxLinker
                 NotifyPropertyChanged("PopupTimeout");
             }
         }
-        public bool CleanClipboard
+        public bool   CleanClipboard
         {
             get { return _CleanClipboard; }
             set
@@ -133,6 +138,36 @@ namespace DropBoxLinker
                 if (_CleanClipboard == value) return;
                 _CleanClipboard = value;
                 NotifyPropertyChanged("CleanClipboard");
+            }
+        }
+        public string SortingKind
+        {
+            get { return _SortingKind; }
+            set
+            {
+                if (_SortingKind == value) return;
+                _SortingKind = value;
+                NotifyPropertyChanged("SortingKind");
+            }
+        }
+        public string SortingOrder
+        {
+            get { return _SortingOrder; }
+            set
+            {
+                if (_SortingOrder == value) return;
+                _SortingOrder = value;
+                NotifyPropertyChanged("SortingOrder");
+            }
+        }
+        public int    FilterCount
+        {
+            get { return _FilterCount; }
+            set
+            {
+                if (_FilterCount == value) return;
+                _FilterCount = value;
+                NotifyPropertyChanged("FilterCount");
             }
         }
 
@@ -143,6 +178,57 @@ namespace DropBoxLinker
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(PropertyName));
         }
+
+        // IDataErrorInfo
+        public string Error
+        {
+            get { throw new NotImplementedException(); }
+        }
+        public string this[string field]
+        {
+            get
+            {
+                string result = null;
+
+                if (field == "SyncDirectory") {
+                    if (String.IsNullOrEmpty(SyncDirectory)) result = "Sync directory is not set";
+                    else if (!Directory.Exists(SyncDirectory)) result = "Selected sync directory not exists"; }
+
+                else if (field == "UserID") {
+                    if (UserID == 0) return "Invalid UserID"; }
+
+                return result;
+            }
+        }
+
+        // save and load
+        public static SettingsModel Load()
+        {
+            var settings = Settings.Default;
+            return new SettingsModel {
+                SyncDirectory = settings.SyncDirectory,
+                UserID = settings.UserID,
+                AutoStartup = DropBoxLinker.AutoStartup.State,
+                PopupTimeout = settings.PopupTimeout,
+                CleanClipboard = settings.CleanClipboard,
+                SortingKind = settings.SortingKind,
+                SortingOrder = settings.SortingOrder,
+                FilterCount = settings.FilterCount };
+        }
+        public void Save()
+        {
+            DropBoxLinker.AutoStartup.State = AutoStartup;
+            var settings = Settings.Default;
+            settings.SyncDirectory = SyncDirectory;
+            settings.UserID = UserID;
+            settings.PopupTimeout = PopupTimeout;
+            settings.CleanClipboard = CleanClipboard;
+            settings.SortingKind = SortingKind;
+            settings.SortingOrder = SortingOrder;
+            settings.FilterCount = FilterCount;
+            settings.Save();            
+        }
+
     }
 
 }

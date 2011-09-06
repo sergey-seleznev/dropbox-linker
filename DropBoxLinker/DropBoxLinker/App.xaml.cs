@@ -7,7 +7,7 @@ namespace DropBoxLinker
         public App()
         {
             InitializeComponent();
-
+            
             // validate settings
             if (!ValidateSettings())
             {

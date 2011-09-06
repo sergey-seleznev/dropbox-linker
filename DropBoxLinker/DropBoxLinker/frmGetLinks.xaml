@@ -1,0 +1,226 @@
+﻿<Window x:Class="DropBoxLinker.frmGetLinks" Title="Get public links"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:DropBoxLinker"
+        Height="504" Width="400" ResizeMode="CanResize"
+        RenderOptions.BitmapScalingMode="NearestNeighbor"
+        WindowStartupLocation="CenterScreen" UseLayoutRounding="True"
+        local:WindowBehavior.HideCloseButton="True"
+        Icon="/DropBoxLinker;component/DropBoxLinker.ico">
+    
+    <Window.Resources>
+
+        <!-- converters -->
+        <local:DateConverter x:Key="DateConverter" />
+        <local:DayToDateConverter x:Key="DayToDateConverter" />
+        <local:SaySizeConverter x:Key="SaySizeConverter" />
+
+        <!-- treeview style -->
+        <Style TargetType="TreeViewItem">
+
+            <Setter Property="IsExpanded" Value="True" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            
+            <Style.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
+            </Style.Resources>
+            
+        </Style>
+
+        <!-- treeview templates -->
+        <HierarchicalDataTemplate x:Key="FolderTemplate" ItemsSource="{Binding VisibleChildren}">
+
+            <StackPanel Focusable="False" Margin="0,1">
+
+                <!-- highlighting -->
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#EEEEEE" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+
+                <!-- check -->
+                <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Name}" Margin="3,1"
+                          VerticalAlignment="Top" VerticalContentAlignment="Top" Cursor="Hand" />
+
+            </StackPanel>
+
+        </HierarchicalDataTemplate>
+        <DataTemplate x:Key="FileTemplate">
+
+            <StackPanel Focusable="False" Margin="0,1">
+
+                <!-- highlighting -->
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#EEEEEE" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+
+                <!-- check -->
+                <CheckBox IsChecked="{Binding IsSelected}" Margin="3,1"
+                          VerticalAlignment="Top" VerticalContentAlignment="Top" Cursor="Hand" >
+                    
+                    <!-- content -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Name}"  />
+                        <TextBlock Text="{Binding Ext}" Foreground="DimGray" />
+                    </StackPanel>
+                    
+                </CheckBox>
+
+            </StackPanel>
+
+        </DataTemplate>
+        <local:SyncItemTemplateSelector x:Key="SyncItemTemplateSelector" />
+
+        <!-- treeview menu -->
+        <ContextMenu x:Key="TreeViewContextMenu">
+            <MenuItem Header="Select all items" Click="BrowserSelectAll" />
+            <MenuItem Header="Deselect all items" Click="BrowserDeselectAll" />
+            <MenuItem Header="Invert selection" Click="BrowserInvertSelection" />
+            <Separator />
+            <MenuItem Header="Refresh list" Click="BrowserRefreshList" />
+        </ContextMenu>
+
+    </Window.Resources>
+    
+    <Grid Margin="10,6">
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- title -->
+        <TextBlock Text="Select items" FontSize="20" FontWeight="Light" Grid.Row="0" Margin="5,0,0,0" />
+
+        <!-- filtering -->
+        <StackPanel Margin="0,6,0,6" Grid.Row="1">
+
+            <!-- slider -->
+            <Slider Name="sldDateRange" Minimum="0" Maximum="100" Value="70" IsSelectionRangeEnabled="True"
+                SelectionStart="{Binding RelativeSource={RelativeSource Mode=Self}, Path=Value}"
+                SelectionEnd="{Binding RelativeSource={RelativeSource Mode=Self}, Path=Maximum}"
+                AutoToolTipPlacement="None" ValueChanged="FilterChange" Margin="0,0,0,0" />
+                
+            <!-- labels -->
+            <DockPanel HorizontalAlignment="Stretch" Margin="0,-2,0,0">
+                <TextBlock Text="All items" Margin="5,0,0,0" HorizontalAlignment="Left" FontSize="10" Foreground="DimGray" />
+                <TextBlock Text="Most recent items" HorizontalAlignment="Right" Margin="0,0,6,0" FontSize="10" Foreground="DimGray" />
+            </DockPanel>
+
+        </StackPanel>
+
+        <!-- sorting -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,2" Grid.Row="2">
+
+            <!-- label -->
+            <TextBlock Text="Sort by" Margin="5,0,3,0" VerticalAlignment="Center" FontSize="11" Foreground="DimGray" />
+
+            <!-- kind -->
+            <ComboBox Name="lstSortKind" FontSize="11" Foreground="DimGray" Padding="2,2,0,2" SelectedIndex="0" Margin="3,0,0,0"
+                          BorderBrush="Transparent" Background="Transparent" SelectionChanged="SortingChanged">
+                <ComboBoxItem>date</ComboBoxItem>
+                <ComboBoxItem>name</ComboBoxItem>
+                <ComboBoxItem>type</ComboBoxItem>
+                <ComboBoxItem>size</ComboBoxItem>
+            </ComboBox>
+
+            <!-- order -->
+            <ComboBox Name="lstSortOrder" FontSize="11" Foreground="DimGray" Padding="2,2,0,2" SelectedIndex="0" Margin="3,0,0,0"
+                          BorderBrush="Transparent" Background="Transparent" SelectionChanged="SortingChanged">
+                <ComboBoxItem>descending</ComboBoxItem>
+                <ComboBoxItem>ascending</ComboBoxItem>
+            </ComboBox>
+
+        </StackPanel>
+
+        <!-- browser -->
+        <TreeView Name="treeBrowser" ItemsSource="{Binding VisibleChildren}" Grid.Row="3"
+                  ItemTemplateSelector="{StaticResource SyncItemTemplateSelector}"
+                  ContextMenu="{StaticResource TreeViewContextMenu}" Margin="5,0,6,0" />
+        
+        <!-- bottom-bar -->
+        <DockPanel Grid.Row="4">
+            
+            <!-- selection info -->
+            <Grid Margin="5,3,0,0" Name="grdSelectionInfo">
+                
+                <!-- hide when nothing selected -->
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedCount}" Value="0">
+                                <Setter Property="Visibility" Value="Hidden" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+                
+                <!-- text style -->
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="10.5" />
+                        <Setter Property="Foreground" Value="DimGray" />
+                    </Style>
+                </Grid.Resources>
+                
+                <!-- cols & rows -->
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <!-- labels -->
+                <TextBlock Text="Selected:" Grid.Row="0" Grid.Column="0" Margin="0,0,5,0" />
+                <TextBlock Text="Total size:" Grid.Row="1" Grid.Column="0" Margin="0,0,5,0" />
+
+                <!-- data -->
+                <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
+                    <TextBlock Text="{Binding SelectedCount, FallbackValue='13'}" />
+                    <TextBlock FontSize="10.5" Foreground="DimGray">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value=" items" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedCount}" Value="1">
+                                        <Setter Property="Text" Value=" item" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+                <TextBlock Text="{Binding SelectedSize, Converter={StaticResource SaySizeConverter}, FallbackValue='45,4 MB'}" Grid.Row="1" Grid.Column="1" />
+
+            </Grid>
+
+            <!-- commands -->
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                <Button Content="Get links!" Padding="14,2" IsDefault="True" Margin="0,0,5,0" Click="GetLinks"  />
+                <Button Content="Cancel" Padding="14,2" IsCancel="True" Click="Cancel" Margin="0,0,6,0" />
+            </StackPanel>
+            
+        </DockPanel>
+
+    </Grid>
+    
+</Window>
